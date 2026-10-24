@@ -1,0 +1,51 @@
+==================================================
+CLEANING LOG
+==================================================
+
+--- CSV: simulated_vehicle_counts.csv ---
+Rows before cleaning            : 80
+Missing values found (per column): none
+  Junction_ID filled 'UNKNOWN'  : 0
+  Non-numeric counts -> missing : 0
+  Rows kept with a missing count: 0 (left blank, not set to 0)
+Exact duplicate rows removed    : 0
+Same time/junction/direction duplicates removed: 0
+Invalid rows rejected           : 0
+Rows after cleaning             : 80
+Arithmetic check                : OK
+
+--- JSON: simulated_traffic_events.json ---
+Records before cleaning         : 20
+Exact duplicate records removed : 0
+Invalid records rejected        : 0
+Records after cleaning          : 20
+
+--- IMAGES ---
+Images found                    : 19
+Images validated OK             : 19
+Image validation failures       : 0
+
+--- JOIN CHECK (nothing is merged in this stage) ---
+CSV and JSON share 20 timestamp(s) and junction id(s) ['SIM_JUNCTION_1']
+  -> a join is only valid because these simulated files were designed to match.
+Images have no shared time/location key with the CSV or JSON -> kept separate.
+
+Raw files were only read, never modified.
+
+Files saved in: /content/traffic_pipeline/processed
+  - README.txt
+  - cleaned_traffic_events.json
+  - cleaned_vehicle_counts.csv
+  - cleaning_log.txt
+  - image_validation.csv
+  - rejected_traffic_events.json
+  - rejected_vehicle_counts.csv
+
+--- OUTPUT STAGE ---
+                          file  expected  found  size_kb status
+    cleaned_vehicle_counts.csv        80     80      5.0     OK
+cleaned_vehicle_counts.parquet        80     80      6.9     OK
+   cleaned_traffic_events.json        20     20      7.1     OK
+          image_validation.csv        19     19      0.8     OK
+              cleaning_log.txt        42     42      1.4     OK
+Raw files unchanged: YES

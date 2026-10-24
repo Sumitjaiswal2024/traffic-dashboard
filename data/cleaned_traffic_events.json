@@ -1,0 +1,233 @@
+{
+  "metadata": {
+    "data_origin": "simulated",
+    "created_by": "Student (original 3 records) and Claude (17 added records)",
+    "created_date": "2026-10-23",
+    "purpose": "For pipeline demonstration only",
+    "disclaimer": "Does not represent real observed traffic events. Location 'Mumbai' is a label, not a real sensor site.",
+    "alignment_note": "Timestamps and vehicle_count totals were designed to match simulated_vehicle_counts.csv (sum over the 4 directions per interval). This alignment is by design, not observed.",
+    "cleaning_note": "Validated records only. Raw file unchanged."
+  },
+  "events": [
+    {
+      "event_id": "SIM-001",
+      "timestamp": "2026-10-20 09:00:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "heavy_traffic",
+      "vehicle_count": 85,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Original record from student file"
+    },
+    {
+      "event_id": "SIM-002",
+      "timestamp": "2026-10-20 09:15:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "normal_traffic",
+      "vehicle_count": 35,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Original record from student file"
+    },
+    {
+      "event_id": "SIM-003",
+      "timestamp": "2026-10-20 09:30:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "traffic_jam",
+      "vehicle_count": 120,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Original record from student file"
+    },
+    {
+      "event_id": "SIM-004",
+      "timestamp": "2026-10-20 09:45:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "traffic_jam",
+      "vehicle_count": 111,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-005",
+      "timestamp": "2026-10-20 10:00:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "normal_traffic",
+      "vehicle_count": 44,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-006",
+      "timestamp": "2026-10-20 10:15:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "normal_traffic",
+      "vehicle_count": 33,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-007",
+      "timestamp": "2026-10-20 10:30:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "traffic_jam",
+      "vehicle_count": 124,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-008",
+      "timestamp": "2026-10-20 10:45:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "heavy_traffic",
+      "vehicle_count": 65,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-009",
+      "timestamp": "2026-10-20 11:00:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "heavy_traffic",
+      "vehicle_count": 61,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-010",
+      "timestamp": "2026-10-20 11:15:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "heavy_traffic",
+      "vehicle_count": 58,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-011",
+      "timestamp": "2026-10-20 11:30:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "normal_traffic",
+      "vehicle_count": 47,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-012",
+      "timestamp": "2026-10-20 11:45:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "traffic_jam",
+      "vehicle_count": 124,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-013",
+      "timestamp": "2026-10-20 12:00:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "normal_traffic",
+      "vehicle_count": 43,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-014",
+      "timestamp": "2026-10-20 12:15:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "traffic_jam",
+      "vehicle_count": 116,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-015",
+      "timestamp": "2026-10-20 12:30:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "traffic_jam",
+      "vehicle_count": 124,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-016",
+      "timestamp": "2026-10-20 12:45:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "heavy_traffic",
+      "vehicle_count": 99,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-017",
+      "timestamp": "2026-10-20 13:00:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "normal_traffic",
+      "vehicle_count": 41,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-018",
+      "timestamp": "2026-10-20 13:15:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "traffic_jam",
+      "vehicle_count": 105,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-019",
+      "timestamp": "2026-10-20 13:30:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "heavy_traffic",
+      "vehicle_count": 84,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    },
+    {
+      "event_id": "SIM-020",
+      "timestamp": "2026-10-20 13:45:00",
+      "location": "Mumbai",
+      "junction_id": "SIM_JUNCTION_1",
+      "event_type": "normal_traffic",
+      "vehicle_count": 34,
+      "is_simulated": true,
+      "source": "manually_created",
+      "note": "Added to reach a usable sample size"
+    }
+  ]
+}
