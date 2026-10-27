@@ -2,19 +2,19 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-
+ 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-
+ 
 st.set_page_config(page_title="Traffic Monitoring Pipeline Dashboard", layout="wide")
-
+ 
 DATA_DIR = Path(__file__).parent / "data"
 COUNTS_FILE = DATA_DIR / "cleaned_vehicle_counts.csv"
 EVENTS_FILE = DATA_DIR / "cleaned_traffic_events.json"
 IMAGES_FILE = DATA_DIR / "image_validation.csv"
 LOG_FILE = DATA_DIR / "cleaning_log.txt"
-
+ 
 COUNT_COLUMNS = ["car", "motorbike", "bus", "truck"]
 COLORS = {"car": "#2563eb", "motorbike": "#f59e0b", "bus": "#10b981", "truck": "#ef4444"}
 COUNTS_REQUIRED = ["timestamp", "Direction", "total_vehicles", "is_simulated"] + COUNT_COLUMNS
@@ -34,8 +34,8 @@ LOG_LABELS = {
     "Images found": "images_found", "Images validated OK": "images_ok",
     "Image validation failures": "image_failures", "Raw files unchanged": "raw_unchanged",
 }
-
-
+ 
+ 
 @st.cache_data
 def load_counts():
     if not COUNTS_FILE.exists():
@@ -49,8 +49,8 @@ def load_counts():
         return df, None
     except Exception as error:
         return None, f"Could not read data/{COUNTS_FILE.name}: {error}"
-
-
+ 
+ 
 @st.cache_data
 def load_events():
     if not EVENTS_FILE.exists():
@@ -68,8 +68,8 @@ def load_events():
         return df, metadata, None
     except Exception as error:
         return None, {}, f"Could not read data/{EVENTS_FILE.name}: {error}"
-
-
+ 
+ 
 @st.cache_data
 def load_images():
     if not IMAGES_FILE.exists():
@@ -82,8 +82,8 @@ def load_images():
         return df, None
     except Exception as error:
         return None, f"Could not read data/{IMAGES_FILE.name}: {error}"
-
-
+ 
+ 
 @st.cache_data
 def load_log():
     if not LOG_FILE.exists():
@@ -92,14 +92,14 @@ def load_log():
         return LOG_FILE.read_text(encoding="utf-8"), None
     except Exception as error:
         return None, f"Could not read data/{LOG_FILE.name}: {error}"
-
-
+ 
+ 
 def fmt(value):
     if value is None:
         return "n/a"
     return f"{value:,}" if isinstance(value, int) else str(value)
-
-
+ 
+ 
 def metric_card(container, label, value, delta=None, help_text=None):
     kwargs = {"help": help_text}
     if delta is not None:
@@ -108,21 +108,21 @@ def metric_card(container, label, value, delta=None, help_text=None):
         container.metric(label, value, border=True, **kwargs)
     except TypeError:
         container.metric(label, value, **kwargs)
-
-
+ 
+ 
 def style_fig(fig, title, height=360):
     fig.update_layout(title=title, height=height, margin=dict(l=10, r=10, t=60, b=10),
                       legend=dict(orientation="h", y=-0.25, title_text=""))
     return fig
-
-
+ 
+ 
 def section(title, caption=None):
     st.divider()
     st.subheader(title)
     if caption:
         st.caption(caption)
-
-
+ 
+ 
 def parse_log(text):
     info = {"reasons": {"csv": {}, "json": {}}, "output_table": [], "join_lines": []}
     if not text:
@@ -159,42 +159,39 @@ def parse_log(text):
                 number = re.match(r"\s*(\d+)", value)
                 info[key] = int(number.group(1)) if number else value.strip()
     return info
-
-
+ 
+ 
 def time_range_filter(times, key):
     labels = [f"{t:%d %b %H:%M}" for t in times]
     start, end = st.select_slider("Time range", options=labels, value=(labels[0], labels[-1]), key=key)
     return times[labels.index(start)], times[labels.index(end)]
-
-
+ 
+ 
 def search_filter(df, query):
     if not query:
         return df
     mask = df.astype(str).apply(lambda c: c.str.contains(query, case=False, regex=False, na=False)).any(axis=1)
     return df[mask]
-
-
+ 
+ 
 def find_thumbnail(filename, thumb_index):
-    if thumb_index is not None and "thumbnail_file" in thumb_index.columns:
-        row = thumb_index[thumb_index["filename"] == filename]
-        if not row.empty and (IMAGES_DIR / str(row.iloc[0]["thumbnail_file"])).exists():
-            return IMAGES_DIR / str(row.iloc[0]["thumbnail_file"])
-    for ext in (".jpg", ".jpeg", ".png"):
-        path = IMAGES_DIR / (Path(filename).stem + ext)
-        if path.exists():
+    wanted = Path(filename).stem.lower()
+    for path in IMAGES_DIR.rglob("*"):
+        if path.is_file() and path.suffix.lower() in (".jpg", ".jpeg", ".png") and path.stem.lower() == wanted:
             return path
     return None
-
-
+ 
+ 
 @st.cache_data
 def load_thumb_index():
-    path = IMAGES_DIR / "thumbnail_index.csv"
-    try:
-        return pd.read_csv(path) if path.exists() else None
-    except Exception:
-        return None
-
-
+    for path in IMAGES_DIR.rglob("thumbnail_index.csv"):
+        try:
+            return pd.read_csv(path)
+        except Exception:
+            return None
+    return None
+ 
+ 
 def simulated_banner(counts, metadata):
     counts_simulated = counts is not None and bool(counts["is_simulated"].all())
     events_simulated = str(metadata.get("data_origin", "")).lower() == "simulated"
@@ -204,22 +201,22 @@ def simulated_banner(counts, metadata):
             "the pipeline and do not represent real observed traffic. The photos are real "
             "but are not linked to these records."
         )
-
-
+ 
+ 
 def page_overview(counts, events, images):
     st.header("Overview")
     if counts is None:
         st.info("Traffic-count data is not available, so the overview cannot be shown.")
         return
-
+ 
     per_interval = counts.groupby("timestamp", as_index=False)["total_vehicles"].sum()
     first, last = counts["timestamp"].min(), counts["timestamp"].max()
-
+ 
     a, b, c = st.columns(3)
     metric_card(a, "Total vehicles", f"{int(counts['total_vehicles'].sum()):,}")
     metric_card(b, "Time intervals", int(counts["timestamp"].nunique()))
     metric_card(c, "Traffic-count rows", len(counts))
-
+ 
     d, e, f = st.columns(3)
     metric_card(d, "Events", len(events) if events is not None else "n/a")
     if images is not None:
@@ -228,17 +225,17 @@ def page_overview(counts, events, images):
     else:
         metric_card(e, "Valid images", "n/a")
     metric_card(f, "Directions", int(counts["Direction"].nunique()))
-
+ 
     if first.date() == last.date():
         st.caption(f"Data covers {first:%d %b %Y}, {first:%H:%M} to {last:%H:%M}.")
     else:
         st.caption(f"Data covers {first:%d %b %Y %H:%M} to {last:%d %b %Y %H:%M}.")
-
+ 
     valid_intervals = per_interval.dropna(subset=["total_vehicles"]).reset_index(drop=True)
     by_direction = (counts.groupby("Direction", as_index=False)["total_vehicles"].sum()
                     .sort_values("total_vehicles", ascending=False).reset_index(drop=True))
     grand_total = int(counts["total_vehicles"].sum())
-
+ 
     section("Traffic statistics", "Calculated from the cleaned traffic-count table.")
     g, h, i, j = st.columns(4)
     metric_card(g, "Average per interval", f"{valid_intervals['total_vehicles'].mean():.1f}",
@@ -254,7 +251,7 @@ def page_overview(counts, events, images):
                     delta=f"{valid_intervals['timestamp'].iloc[pos - 1]:%H:%M} to {valid_intervals['timestamp'].iloc[pos]:%H:%M}")
     else:
         metric_card(j, "Largest change between intervals", "n/a")
-
+ 
     left, right = st.columns([3, 2])
     with left:
         fig = px.line(
@@ -272,14 +269,14 @@ def page_overview(counts, events, images):
         )
         fig.update_layout(showlegend=False)
         st.plotly_chart(style_fig(fig, "Vehicles by type"))
-
+ 
     if not valid_intervals.empty:
         busiest = valid_intervals.loc[valid_intervals["total_vehicles"].idxmax()]
         quietest = valid_intervals.loc[valid_intervals["total_vehicles"].idxmin()]
         x, y = st.columns(2)
         x.success(f"Busiest interval: {busiest['timestamp']:%d %b %H:%M} with {int(busiest['total_vehicles'])} vehicles")
         y.info(f"Quietest interval: {quietest['timestamp']:%d %b %H:%M} with {int(quietest['total_vehicles'])} vehicles")
-
+ 
     st.subheader("Events by type")
     if events is None:
         st.info("Event data is not available.")
@@ -287,7 +284,7 @@ def page_overview(counts, events, images):
         by_type = events["event_type"].value_counts()
         for column, (name, number) in zip(st.columns(len(by_type)), by_type.items()):
             metric_card(column, str(name).replace("_", " ").title(), int(number))
-
+ 
     section("Traffic by direction", "Total vehicles counted in each direction, with each direction's share of all traffic.")
     left, right = st.columns([3, 2])
     by_direction["Share (%)"] = (by_direction["total_vehicles"] / grand_total * 100).round(1) if grand_total else 0
@@ -298,7 +295,7 @@ def page_overview(counts, events, images):
         st.plotly_chart(style_fig(fig, "Total vehicles by direction"))
     with right:
         st.dataframe(by_direction.rename(columns={"total_vehicles": "Vehicles"}), hide_index=True)
-
+ 
     section("Vehicle types: counts and percentages", "Share of all counted vehicles, by type.")
     type_table = counts[COUNT_COLUMNS].sum().reset_index()
     type_table.columns = ["Vehicle type", "Count"]
@@ -311,7 +308,7 @@ def page_overview(counts, events, images):
         fig = px.pie(type_table, names="Vehicle type", values="Count", hole=0.5,
                      color="Vehicle type", color_discrete_map=COLORS)
         st.plotly_chart(style_fig(fig, "Vehicle-type share"))
-
+ 
     section("Traffic trend over time", "Interval totals with a 3-interval moving average (calculated; it starts at the third interval).")
     trend = valid_intervals.copy()
     trend["3-interval moving average"] = trend["total_vehicles"].rolling(3, min_periods=3).mean()
@@ -323,8 +320,8 @@ def page_overview(counts, events, images):
         half = len(trend) // 2
         first_half, second_half = trend["Interval total"].iloc[:half].mean(), trend["Interval total"].iloc[half:].mean()
         st.caption(f"Average per interval: {first_half:.1f} in the first half of the period vs {second_half:.1f} in the second half.")
-
-
+ 
+ 
 def page_analytics(counts, events):
     st.header("Traffic Analytics")
     if counts is None:
@@ -343,10 +340,10 @@ def page_analytics(counts, events):
         return
     fdf["selected_total"] = fdf[types].sum(axis=1)
     st.caption(f"{len(fdf)} rows selected. Totals below include only the selected vehicle types.")
-
+ 
     per_dir_time = fdf.groupby(["timestamp", "Direction"], as_index=False)["selected_total"].sum()
     per_interval = fdf.groupby("timestamp", as_index=False)["selected_total"].sum()
-
+ 
     left, right = st.columns(2)
     with left:
         fig = px.line(per_dir_time, x="timestamp", y="selected_total", color="Direction", markers=True,
@@ -358,7 +355,7 @@ def page_analytics(counts, events):
         fig = px.imshow(pivot, aspect="auto", color_continuous_scale="Blues",
                         labels={"x": "Time", "y": "Direction", "color": "Vehicles"})
         st.plotly_chart(style_fig(fig, "Heatmap: direction by time"))
-
+ 
     left, right = st.columns(2)
     with left:
         mix = fdf.groupby("timestamp", as_index=False)[types].sum().melt(id_vars="timestamp", var_name="Vehicle type", value_name="Vehicles")
@@ -369,7 +366,7 @@ def page_analytics(counts, events):
         dir_type = fdf.groupby("Direction", as_index=False)[types].sum().melt(id_vars="Direction", var_name="Vehicle type", value_name="Vehicles")
         fig = px.bar(dir_type, x="Direction", y="Vehicles", color="Vehicle type", barmode="group", color_discrete_map=COLORS)
         st.plotly_chart(style_fig(fig, "Direction comparison by vehicle type"))
-
+ 
     section("Trend and change", "Both charts are calculated from the interval totals above.")
     left, right = st.columns(2)
     with left:
@@ -385,7 +382,7 @@ def page_analytics(counts, events):
         fig = px.bar(change.dropna(subset=["Change"]), x="timestamp", y="Change",
                      labels={"timestamp": "Time", "Change": "Change vs previous interval"})
         st.plotly_chart(style_fig(fig, "Change from the previous interval"))
-
+ 
     section("Per-direction statistics", "Calculated per direction across the selected intervals.")
     rows = []
     for direction, group in per_dir_time.groupby("Direction"):
@@ -395,7 +392,7 @@ def page_analytics(counts, events):
                      "Lowest interval": int(group["selected_total"].min()),
                      "Peak interval": int(peak["selected_total"]), "Peak time": f"{peak['timestamp']:%d %b %H:%M}"})
     st.dataframe(pd.DataFrame(rows), hide_index=True)
-
+ 
     section("Events", "From the validated event records, within the selected time range.")
     if events is None:
         st.info("Event data is not available.")
@@ -427,8 +424,8 @@ def page_analytics(counts, events):
                    "The simulated events and counts were designed to align, so this is not an observed link.")
     else:
         st.caption("Events and counts share no junction id, so they are not compared.")
-
-
+ 
+ 
 def page_records(counts, events, images):
     st.header("Records")
     tab_counts, tab_events, tab_images = st.tabs(["Traffic counts", "Events", "Image metadata"])
@@ -479,8 +476,8 @@ def page_records(counts, events, images):
             st.dataframe(view, hide_index=True)
             st.download_button("Download as CSV", view.to_csv(index=False).encode("utf-8"),
                                file_name="image_metadata_filtered.csv", mime="text/csv", key="dl_images")
-
-
+ 
+ 
 def page_images(images):
     st.header("Traffic Images")
     st.info("These are the actual input photos with the metadata your pipeline recorded when it validated them. "
@@ -524,8 +521,8 @@ def page_images(images):
     section("Detection results and per-image vehicle counts")
     st.info("Not available. The pipeline does not run vehicle detection, and it does not store a capture time or a vehicle count "
             "for each image, so none are shown. Showing them would require adding a real detection or manual-counting step to the pipeline.")
-
-
+ 
+ 
 def stage_html(stages):
     boxes = []
     for i, (title, subtitle, lines) in enumerate(stages):
@@ -537,8 +534,8 @@ def stage_html(stages):
         if i < len(stages) - 1:
             boxes.append("<div style='align-self:center;font-size:1.4rem;padding:0 2px'>&#10132;</div>")
     return "<div style='display:flex;gap:6px;flex-wrap:wrap;align-items:stretch'>" + "".join(boxes) + "</div>"
-
-
+ 
+ 
 def page_pipeline(counts, events, images, log):
     st.header("Pipeline")
     if not log.get("csv_before") and log.get("csv_before") != 0:
@@ -556,7 +553,7 @@ def page_pipeline(counts, events, images, log):
         ("5. Dashboard", "This app", [f"CSV rows shown: {fmt(len(counts)) if counts is not None else 'n/a'}",
                                       f"Events shown: {fmt(len(events)) if events is not None else 'n/a'}"]),
     ]), unsafe_allow_html=True)
-
+ 
     section("Input and output record counts", "Taken from the pipeline's cleaning log.")
     st.dataframe(pd.DataFrame([
         {"Dataset": "Traffic-count CSV", "Input records": log.get("csv_before"), "Exact duplicates removed": log.get("csv_exact"),
@@ -566,7 +563,7 @@ def page_pipeline(counts, events, images, log):
         {"Dataset": "Images", "Input records": log.get("images_found"), "Exact duplicates removed": None,
          "Other duplicates removed": None, "Invalid rejected": log.get("image_failures"), "Output records": log.get("images_ok")},
     ]).astype(object).where(lambda d: d.notna(), "n/a"), hide_index=True)
-
+ 
     section("Missing values and rejections", "How the transform stage handled problem data.")
     a, b, c = st.columns(3)
     metric_card(a, "Junction_ID filled as UNKNOWN", fmt(log.get("junction_filled")))
@@ -577,23 +574,23 @@ def page_pipeline(counts, events, images, log):
         if log["reasons"][name]:
             st.write(f"Rejection reasons ({name.upper()}):")
             st.dataframe(pd.DataFrame(list(log["reasons"][name].items()), columns=["Reason", "Records"]), hide_index=True)
-
+ 
     if log["join_lines"]:
         section("Dataset relationships", "From the pipeline's join check. Nothing is merged by the pipeline.")
         for line in log["join_lines"]:
             st.write(line)
-
+ 
     section("Not recorded by the pipeline")
     st.info("Processing duration, per-stage run times and the last execution time are not available, because the pipeline does not "
             "write them to its outputs. They are not estimated here. Recording them would need a small addition to the pipeline.")
-
-
+ 
+ 
 def status_checks(log, counts, events, images, load_errors):
     checks = []
-
+ 
     def add(name, result, detail):
         checks.append({"Check": name, "Result": result, "Detail": detail})
-
+ 
     raw = log.get("raw_unchanged")
     add("Raw files unchanged", "UNKNOWN" if raw is None else ("PASS" if raw == "YES" else "FAIL"), f"Log reports: {fmt(raw)}")
     arith = log.get("arithmetic")
@@ -621,8 +618,8 @@ def status_checks(log, counts, events, images, load_errors):
         add("Output files verified", "PASS" if not bad else "FAIL", f"{len(table) - len(bad)} of {len(table)} OK" + (f"; problems: {bad}" if bad else ""))
     add("Dashboard data files readable", "PASS" if not load_errors else "FAIL", "All four files read" if not load_errors else "; ".join(load_errors))
     return checks
-
-
+ 
+ 
 def page_status(counts, events, images, log_text, log, load_errors):
     st.header("Pipeline Status")
     checks = status_checks(log, counts, events, images, load_errors)
@@ -639,13 +636,13 @@ def page_status(counts, events, images, log_text, log, load_errors):
     metric_card(c, "Attention", results.count("ATTENTION"))
     metric_card(d, "Unknown", results.count("UNKNOWN"))
     st.dataframe(pd.DataFrame(checks), hide_index=True)
-
+ 
     section("Output verification", "The table the pipeline's Output stage wrote to its log.")
     if log["output_table"]:
         st.dataframe(pd.DataFrame(log["output_table"]), hide_index=True)
     else:
         st.info("No output verification table found in the cleaning log.")
-
+ 
     section("Errors and rejected records")
     if load_errors:
         for message in load_errors:
@@ -660,22 +657,22 @@ def page_status(counts, events, images, log_text, log, load_errors):
         shown = True
     if not shown and not load_errors:
         st.success("No errors or rejected records were recorded in the log.")
-
+ 
     section("Last run information")
     st.info("The last execution time and processing duration are not recorded by the pipeline, so they are not shown.")
     if log_text:
         with st.expander("Full cleaning log"):
             st.text(log_text)
-
-
+ 
+ 
 def coming_soon(name):
     st.header(name)
     st.info(f"The {name} page will be added in a later step.")
-
-
+ 
+ 
 if "loaded_at" not in st.session_state:
     st.session_state["loaded_at"] = datetime.now()
-
+ 
 st.sidebar.title("Traffic Pipeline")
 page = st.sidebar.radio("Go to", PAGES)
 if st.sidebar.button("Reload data"):
@@ -683,21 +680,21 @@ if st.sidebar.button("Reload data"):
     st.session_state["loaded_at"] = datetime.now()
     st.rerun()
 st.sidebar.caption(f"Data loaded at {st.session_state['loaded_at']:%H:%M:%S} (server time)")
-
+ 
 counts, counts_error = load_counts()
 events, event_metadata, events_error = load_events()
 images, images_error = load_images()
 log_text, log_error = load_log()
-
+ 
 st.title("Traffic Monitoring Data Pipeline")
 simulated_banner(counts, event_metadata)
 for message in (counts_error, events_error, images_error, log_error):
     if message:
         st.error(message)
-
+ 
 log = parse_log(log_text)
 load_errors = [m for m in (counts_error, events_error, images_error, log_error) if m]
-
+ 
 if page == "Overview":
     page_overview(counts, events, images)
 elif page == "Pipeline":
@@ -712,3 +709,4 @@ elif page == "Status":
     page_status(counts, events, images, log_text, log, load_errors)
 else:
     coming_soon(page)
+ 
